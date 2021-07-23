@@ -37,7 +37,7 @@
 <snapshotRepository>
   <id>CICD-Pipeline</id>
   <name>CICD-Pipeline</name>
-  <url>http://localhost:8081/repository/CICD-Pipeline/</url>
+  <url>http://3.129.8.188:8081/repository/CICD-Pipeline/</url>
   </snapshotRepository>
   </distributionManagement>
  

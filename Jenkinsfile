@@ -1,7 +1,7 @@
 pipeline {
 agent {
     node {
-      label 'master'
+      label 'master-3.8.1'
     }
   }
       tools {

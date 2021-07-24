@@ -1,11 +1,11 @@
 pipeline {
 agent {
     node {
-      label 'master-3.8.1'
+      label 'any'
     }
   }
       tools {
-        maven 'maven'
+        maven 'maven-3.8.1'
     }
     stages {
      stage('Tool version Check') {

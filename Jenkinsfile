@@ -16,7 +16,7 @@ agent {
         }
     stage('SonarQube Analysis') {
       environment {
-        SCANNER_HOME = tool 'sonarqube'
+        SCANNER_HOME = tool 'sonar_scanner'
         ORGANIZATION = "sonarqube"
         PROJECT_NAME = "sonarqube"
       }

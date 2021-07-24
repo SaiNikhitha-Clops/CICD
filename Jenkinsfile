@@ -5,7 +5,7 @@ agent {
     }
   }
       tools {
-        maven 'maven-3.6.3'
+        maven 'maven'
     }
     stages {
      stage('Tool version Check') {

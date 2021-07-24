@@ -5,7 +5,7 @@ agent {
     }
   }
       tools {
-        maven 'maven-3.8.1'
+        jdk 'jdk-8.221'
     }
     stages {
      stage('Tool version Check') {

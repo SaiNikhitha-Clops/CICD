@@ -1,20 +1,14 @@
-pipeline{
-    agent any
-     tools {
-        jdk 'jdk-8.221'
+pipeline {
+agent {
+    node {
+      label 'master'
     }
-    stages{
-      stage('Test'){
-          steps{
-          sh 'mvn test'
-          }
-      }
-      stage('Build'){
-          steps{
-          sh 'mvn install'
-          }
-      }
-         stage('Tool version Check') {
+  }
+      tools {
+        maven 'maven-3.8.1'
+    }
+    stages {
+     stage('Tool version Check') {
             steps {
                 echo "Hello, Maven"
                 sh "mvn --version"
@@ -22,7 +16,7 @@ pipeline{
         }
     stage('SonarQube Analysis') {
       environment {
-        SCANNER_HOME = tool 'sonar_scanner'
+        SCANNER_HOME = tool 'sonarqube'
         ORGANIZATION = "sonarqube"
         PROJECT_NAME = "sonarqube"
       }
@@ -34,7 +28,14 @@ pipeline{
         }
       }
     }
-        stage('Stage 2') {
+        stage("Quality Gate") {
+          steps {
+            timeout(time: 1, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+            }
+          }
+        }
+        stage('Stage 22') {
             steps {
                 echo 'Stage2 Hello world!' 
                 echo  'Stage2 $date'
@@ -45,12 +46,45 @@ pipeline{
                 echo 'Welcome to Stage3 ' 
                 echo  'Stage3 '
             }
-        }         
+        }          
     }
+      post {
+       success {
+         notifySuccess()
+       }
+       unstable {
+         notifyUnstable()
+       }
+       failure {
+         notifyFailed()
+       }
+     }
 }
-
-
-
-
-
+def notifyBuild(String buildStatus = 'STARTED', String colorCode = '#5492f7', String notify = '') {
+  def project = 'webapp'
+  def channel = "#clops-jivox-promethean-qa-alerts"
+  def base = "https://github.com/anuwardeen-clops/${project}/commits/"
+  def commit = sh(returnStdout: true, script: 'git log -n 1 --format="%H"').trim()
+  def link = "${base}${commit}"
+  def shortCommit = commit.take(6)
+  def title = sh(returnStdout: true, script: 'git log -n 1 --format="%s"').trim()
+  def subject = "<${link}|${shortCommit}> ${title}"
+  def summary = "${buildStatus}: Job <${env.RUN_DISPLAY_URL}|${env.JOB_NAME} [${env.BUILD_NUMBER}]>\n${subject} ${notify}"
+  slackSend (channel: "#${channel}", color: colorCode, message: summary)
+}
+def author() {
+  return sh(returnStdout: true, script: 'git log -n 1 --format="%an" | awk \'{print tolower($1);}\'').trim()
+}
+def notifyStarted() {
+  notifyBuild()
+}
+def notifySuccess() {
+  notifyBuild('SUCCESS', 'good')
+}
+def notifyUnstable() {
+  notifyBuild('UNSTABLE', 'warning', "\nAuthor: @${author()} <${RUN_CHANGES_DISPLAY_URL}|Changelog>")
+}
+def notifyFailed() {
+  notifyBuild('FAILED', 'danger', "\nAuthor: @${author()} <${RUN_CHANGES_DISPLAY_URL}|Changelog>")
+}
 
